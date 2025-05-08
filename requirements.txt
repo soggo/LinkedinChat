@@ -5,6 +5,7 @@ uvicorn>=0.27.0,<0.35.0 # Version from your list, adjust as needed
 requests>=2.31.0,<2.33.0 # Version from your list, adjust as needed
 anthropic>=0.21.3,<0.41.0 # Version from your list, adjust as needed
 pydantic>=2.5.3,<2.11.0 # Version from your list, adjust as needed
+gunicorn==21.2.0
 
 # Optional, but recommended for local .env file loading
 python-dotenv>=1.0.0,<1.1.0 # Version from your list, adjust as needed

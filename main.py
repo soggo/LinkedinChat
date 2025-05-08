@@ -29,7 +29,7 @@ LINKEDIN_CLIENT_SECRET = os.environ.get('LINKEDIN_CLIENT_SECRET')
 
 # APP_BASE_URL will be like 'https://your-app-name.onrender.com' in production
 # or 'http://localhost:8000' for local development if not set in local env.
-APP_BASE_URL = os.environ.get("APP_BASE_URL", "https://linkedinchat.onrender.com")
+APP_BASE_URL = os.environ.get("APP_BASE_URL", "https://linkedinchat.onrender.com/callback")
 
 # --- Validate Critical Environment Variables ---
 CRITICAL_ENV_VARS = {

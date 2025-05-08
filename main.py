@@ -255,7 +255,7 @@ def send_whatsapp_interactive_buttons(to: str, message_text: str, buttons: List[
         print("WhatsApp API credentials not configured.")
         return False, "WhatsApp API credentials not configured."
 
-    url = f"https://graph.facebook.com/v22.0/{WHATSAPP_PHONE_NUMBER_ID}/messages" 
+    url = f"https://graph.facebook.com/v22.0/{WHATSAPP_PHONE_NUMBER_ID}/messages"
     headers = {
         "Content-Type": "application/json",
         "Authorization": f"Bearer {WHATSAPP_ACCESS_TOKEN}"

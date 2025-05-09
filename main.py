@@ -130,7 +130,7 @@ def get_oauth_url(phone_number: str) -> str:
 def get_access_token(authorization_code: str) -> Optional[Dict[str, Any]]:
     """Exchange authorization code for access token"""
     token_url = "https://www.linkedin.com/oauth/v2/accessToken"
-    redirect_uri = f"{APP_BASE_URL}/callback" # Must match the one used in get_oauth_url
+    redirect_uri = f"{APP_BASE_URL}" # Must match the one used in get_oauth_url
     
     payload = {
         "grant_type": "authorization_code",

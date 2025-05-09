@@ -29,7 +29,7 @@ LINKEDIN_CLIENT_SECRET = os.environ.get('LINKEDIN_CLIENT_SECRET')
 
 # APP_BASE_URL will be like 'https://your-app-name.onrender.com' in production
 # or 'http://localhost:8000' for local development if not set in local env.
-APP_BASE_URL = os.environ.get("APP_BASE_URL", "https://linkedinchat.onrender.com/callback")
+APP_BASE_URL = os.environ.get("APP_BASE_URL", "https://linkedinchat.onrender.com/")
 
 # --- Validate Critical Environment Variables ---
 CRITICAL_ENV_VARS = {
@@ -105,7 +105,7 @@ class WebhookVerification(BaseModel):
 # --- LinkedIn OAuth Functions ---
 def get_oauth_url(phone_number: str) -> str:
     """Generate LinkedIn OAuth authorization URL using OIDC scopes"""
-    redirect_uri = f"{APP_BASE_URL}" # Uses APP_BASE_URL (Render) or localhost (local)
+    redirect_uri = f"{APP_BASE_URL}/callback" # Uses APP_BASE_URL (Render) or localhost (local)
     
     # Generate a unique state parameter to prevent CSRF and map back to the user
     # Include phone_number in the state for re-association, though this example doesn't use it in callback

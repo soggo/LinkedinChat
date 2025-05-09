@@ -340,35 +340,8 @@ To get started, send "auth" or your post idea!"""
         auth_message = f"""🔗 To connect your LinkedIn account, please click this link:
 {auth_url}
 
-After authorizing, LinkedIn will redirect you. Copy the 'code' parameter value from the URL in your browser's address bar.
-Then send it to me like this:
-code:YOUR_CODE_HERE"""
+After authorizing, you can return to WhatsApp and start creating posts!"""
         send_whatsapp_message(phone_number, auth_message)
-
-    elif lower_text.startswith("code:"):
-        code = lower_text.replace("code:", "").strip()
-        if not code:
-            send_whatsapp_message(phone_number, "It seems the code is missing. Please send it like: code:YOUR_CODE_HERE")
-            return
-
-        send_whatsapp_message(phone_number, "🔄 Authenticating with LinkedIn using your code...")
-        token_data = get_access_token(code)
-        
-        if token_data and "access_token" in token_data:
-            expires_in = token_data.get("expires_in", 3600) # Default to 1 hour
-            linkedin_user_id_sub = get_linkedin_user_id(token_data["access_token"])
-
-            if linkedin_user_id_sub:
-                user_tokens[phone_number] = {
-                    "access_token": token_data["access_token"],
-                    "expires_at": time.time() + expires_in,
-                    "linkedin_id_sub": linkedin_user_id_sub # Store the 'sub'
-                }
-                send_whatsapp_message(phone_number, "✅ Successfully connected to your LinkedIn account!")
-            else:
-                send_whatsapp_message(phone_number, "✅ Authentication successful, but couldn't retrieve your LinkedIn User ID (sub). Posting might fail. Please try 'auth' again.")
-        else:
-            send_whatsapp_message(phone_number, "❌ Authentication failed. Please ensure you copied the code correctly and try 'auth' again.")
 
     elif lower_text == "cancel":
         if phone_number in pending_posts: del pending_posts[phone_number]
@@ -557,19 +530,10 @@ async def receive_webhook(request: Request):
 
 @app.get("/callback", tags=["LinkedIn OAuth"])
 async def oauth_callback(request: Request):
-    """Handle OAuth callback from LinkedIn.
-    This endpoint primarily serves to let the user copy the 'code' from the URL.
-    A robust implementation would also verify the 'state' parameter.
-    """
+    """Handle OAuth callback from LinkedIn and complete the flow automatically."""
     query_params = dict(request.query_params)
     code = query_params.get("code")
-    state_from_linkedin = query_params.get("state") # State sent by LinkedIn
-
-    # Basic state validation (optional but recommended)
-    # if state_from_linkedin not in oauth_states:
-    #     # Handle invalid state - could be a CSRF attempt
-    #     return Response(content="<h1>Authentication Failed</h1><p>Invalid state parameter. Please try 'auth' again.</p>", media_type="text/html")
-    # phone_number_for_state = oauth_states.pop(state_from_linkedin, None) # Remove state after use
+    state_from_linkedin = query_params.get("state")
 
     html_content_base = """
     <html><head><title>LinkedIn Authentication</title>
@@ -578,23 +542,55 @@ async def oauth_callback(request: Request):
     """
     html_content_end = "</body></html>"
 
-    if code:
-        success_html = f"""{html_content_base}
-            <h1>Authentication Almost Complete!</h1>
-            <p>Please <b>copy the authorization code below</b> and send it to the WhatsApp bot with the prefix "code:".</p>
-            <p>Your authorization code:</p>
-            <pre>{code}</pre>
-            <p>For example, send to WhatsApp: <code>code:{code}</code></p>
-            <p>You can now close this window.</p>
+    # 1. Validate state and get phone number
+    phone_number = oauth_states.pop(state_from_linkedin, None)
+    if not phone_number:
+        error_html = f"""{html_content_base}
+            <h1>Authentication Failed</h1>
+            <p>Invalid or expired state parameter. Please try 'auth' again from WhatsApp.</p>
         {html_content_end}"""
-        return Response(content=success_html, media_type="text/html")
-    else:
+        return Response(content=error_html, media_type="text/html")
+
+    if not code:
         error_reason = query_params.get("error_description", "No authorization code was provided by LinkedIn.")
         error_html = f"""{html_content_base}
             <h1>Authentication Failed</h1>
             <p>There was an error during LinkedIn authentication:</p>
             <pre>{error_reason}</pre>
-            <p>Please try again by sending "auth" to the WhatsApp bot. If the problem persists, check your LinkedIn App configuration.</p>
+            <p>Please try again by sending \"auth\" to the WhatsApp bot. If the problem persists, check your LinkedIn App configuration.</p>
+        {html_content_end}"""
+        return Response(content=error_html, media_type="text/html")
+
+    # 2. Exchange code for token
+    token_data = get_access_token(code)
+    if token_data and "access_token" in token_data:
+        expires_in = token_data.get("expires_in", 3600)
+        linkedin_user_id_sub = get_linkedin_user_id(token_data["access_token"])
+        if linkedin_user_id_sub:
+            user_tokens[phone_number] = {
+                "access_token": token_data["access_token"],
+                "expires_at": time.time() + expires_in,
+                "linkedin_id_sub": linkedin_user_id_sub
+            }
+            # 3. Send WhatsApp confirmation
+            send_whatsapp_message(phone_number, "✅ Successfully connected to your LinkedIn account! You can now generate and post content.")
+            success_html = f"""{html_content_base}
+                <h1>Authentication Complete!</h1>
+                <p>Your LinkedIn account is now connected. You can return to WhatsApp and start creating posts.</p>
+            {html_content_end}"""
+            return Response(content=success_html, media_type="text/html")
+        else:
+            send_whatsapp_message(phone_number, "✅ Authentication successful, but couldn't retrieve your LinkedIn User ID (sub). Posting might fail. Please try 'auth' again.")
+            error_html = f"""{html_content_base}
+                <h1>Authentication Issue</h1>
+                <p>Authenticated, but could not retrieve your LinkedIn User ID. Please try again.</p>
+            {html_content_end}"""
+            return Response(content=error_html, media_type="text/html")
+    else:
+        send_whatsapp_message(phone_number, "❌ Authentication failed. Please try 'auth' again.")
+        error_html = f"""{html_content_base}
+            <h1>Authentication Failed</h1>
+            <p>Could not exchange code for access token. Please try again.</p>
         {html_content_end}"""
         return Response(content=error_html, media_type="text/html")
 

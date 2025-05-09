@@ -105,7 +105,7 @@ class WebhookVerification(BaseModel):
 # --- LinkedIn OAuth Functions ---
 def get_oauth_url(phone_number: str) -> str:
     """Generate LinkedIn OAuth authorization URL using OIDC scopes"""
-    redirect_uri = f"{APP_BASE_URL}/callback" # Uses APP_BASE_URL (Render) or localhost (local)
+    redirect_uri = f"{APP_BASE_URL}" # Uses APP_BASE_URL (Render) or localhost (local)
     
     # Generate a unique state parameter to prevent CSRF and map back to the user
     # Include phone_number in the state for re-association, though this example doesn't use it in callback
@@ -130,7 +130,7 @@ def get_oauth_url(phone_number: str) -> str:
 def get_access_token(authorization_code: str) -> Optional[Dict[str, Any]]:
     """Exchange authorization code for access token"""
     token_url = "https://www.linkedin.com/oauth/v2/accessToken"
-    redirect_uri = f"{APP_BASE_URL}" # Must match the one used in get_oauth_url
+    redirect_uri = f"{APP_BASE_URL}/callback" # Must match the one used in get_oauth_url
     
     payload = {
         "grant_type": "authorization_code",

@@ -224,7 +224,7 @@ def send_whatsapp_message(to: str, message_text: str) -> tuple[bool, Any]:
         print("WhatsApp API credentials not configured.")
         return False, "WhatsApp API credentials not configured."
 
-    url = f"https://graph.facebook.com/v17.0/{WHATSAPP_PHONE_NUMBER_ID}/messages" # Consider updating API version if needed
+    url = f"https://graph.facebook.com/v22.0/{WHATSAPP_PHONE_NUMBER_ID}/messages" # Consider updating API version if needed
     headers = {
         "Content-Type": "application/json",
         "Authorization": f"Bearer {WHATSAPP_ACCESS_TOKEN}"

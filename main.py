@@ -71,6 +71,7 @@ Your task is to:
 - Adapt to the user's industry and preferences
 - IMPORTANT: Post like an actual human, no such things in actual post such as "Here's your LinkedIn post:"
 - IMPORTANT: no use of emoji unless specifically requested or highly appropriate for the context. Prioritize professionalism.
+- IMPORTANT: You are posting direclty to user account, once user approves the post, so no need for post prefixes like here is a draft, or any such things, just give the straight post.
 
 Each post should be under 3,000 characters (LinkedIn's limit) and optimized for engagement.'''
 
